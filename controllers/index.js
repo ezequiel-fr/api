@@ -151,3 +151,17 @@ export const editRow = async () => {
         console.error(err)
     }
 }
+
+export const editRowPropertie = async () => {
+    const { token, rowName, newProperties } = {
+        token: "secret_vFiZT3C44POr4yZk9A42dE56t5RjTJ3W3OgeowqmyuqYz44O5NRaG5RmGHmEpoE4",
+        newProperties: "Number",
+        rowName: "New name of column"
+    }
+
+    try{
+
+    }catch(err){
+        console.error(err)
+    }
+}
