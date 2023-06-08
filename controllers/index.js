@@ -104,7 +104,7 @@ export const addRow = async (req, res) => {
     }
 }
 
-export const editRow = async () => {
+export const editRowName = async () => {
     const { token, currentColumnName, newColumnName } = {
         token: "secret_vFiZT3C44POr4yZk9A42dE56t5RjTJ3W3OgeowqmyuqYz44O5NRaG5RmGHmEpoE4",
         currentColumnName: "New row",
@@ -139,7 +139,7 @@ export const editRow = async () => {
             console.error("La colonne n'a pas été trouvée.")
         }
 
-        const [ propertyKey, propertyvalue ] = propertyToUpdate
+        const [, propertyvalue ] = propertyToUpdate
         propertyvalue.name = newColumnName
 
         await notion.databases.update({
@@ -152,16 +152,50 @@ export const editRow = async () => {
     }
 }
 
-export const editRowPropertie = async () => {
-    const { token, rowName, newProperties } = {
+export const editRowProperty = async () => {
+    const { token, columnName, newProperty } = {
         token: "secret_vFiZT3C44POr4yZk9A42dE56t5RjTJ3W3OgeowqmyuqYz44O5NRaG5RmGHmEpoE4",
-        newProperties: "Number",
-        rowName: "New name of column"
+        columnName: "New name of column",
+        newProperty: "number"
+    };
+
+    const propertyPossibilities = {
+        text: {
+            name: columnName,
+            type: 'rich_text',
+            rich_text: {}
+        },
+        number: {
+            name: columnName,
+            type: 'number',
+            number: { format: 'number' }
+        }
     }
 
-    try{
+    try {
+        const searchResponse = await notion.databases.query({
+            database_id: process.env.TOKENS_TABLE_ID,
+            filter: { or: [{ property: "Token", title: { equals: token } }] }
+        });
 
-    }catch(err){
-        console.error(err)
+        if (searchResponse.results.length === 0) {
+            console.error("Le token n'a pas été trouvé.");
+            return;
+        }
+
+        const databaseId = searchResponse.results[0].properties.Id.rich_text[0].text.content;
+        const database = await notion.databases.retrieve({ database_id: databaseId });
+
+        const newProperties = Object.fromEntries(
+            Object.entries(database.properties).filter(([key, value]) => value.name !== columnName)
+        );
+        newProperties[columnName] = propertyPossibilities[newProperty]
+
+        await notion.databases.update({
+            database_id: databaseId,
+            properties: newProperties
+        });
+    } catch (err) {
+        console.error(err);
     }
-}
+};

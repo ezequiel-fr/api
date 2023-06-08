@@ -1,5 +1,10 @@
 import { Router } from "express";
-import { createNewDB, addRow, editRow } from "../controllers/index.js";
+import { 
+    createNewDB, 
+    addRow, 
+    editRowName, 
+    editRowProperty 
+} from "../controllers/index.js";
 
 const userDB = Router();
 
@@ -9,6 +14,8 @@ userDB.post('/newDB', createNewDB)
 //add a row in an existant db, token and name required
 userDB.post('/addRow', addRow)
 // Edit row name
-userDB.post('/editRow', editRow)
+userDB.post('/editRowName', editRowName)
+// Edit row propertie
+userDB.post('/editRowProperty', editRowProperty)
 
 export default userDB;
