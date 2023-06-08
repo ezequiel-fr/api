@@ -2,11 +2,13 @@ import { Client } from "@notionhq/client";
 import { config } from "dotenv";
 config();
 
+// Connection to Notion with token in .env
 const notion = new Client({
     auth: process.env.NOTION_TOKEN_KEY
 })
 
 export const createNewDB = async (req, res) => {
+    // Soon the value will be req.body don't worry
     const { name, creator, minrole, description, status } = {
         name: "First test",
         creator: "Le criquet #Owner",
@@ -15,12 +17,11 @@ export const createNewDB = async (req, res) => {
         status: "on"
     };
 
-    function generateTI(option) {
+    // it's to generate Token with a length of 64
+    function generateToken() {
         const possibilities = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789123456789";
-        var result = option ? "secret_" : "";
-        var length = option ? 64 : 20;
-      
-        for (var i = 0; i < length; i++) {
+        var result = "secret_";
+        for (var i = 0; i < 64; i++) {
           result += possibilities.charAt(Math.floor(Math.random() * possibilities.length));
         }
       
@@ -28,6 +29,7 @@ export const createNewDB = async (req, res) => {
       }
 
     try{
+        // Create a new data base for the user with original row like Name Numero and Other properties
         const newTable = await notion.databases.create({
             parent: { page_id: '99d82f06f95749a685ad597016e085cb' },
             title: [ { type: 'text', text: { content: name } } ],
@@ -38,10 +40,11 @@ export const createNewDB = async (req, res) => {
             }
         })
 
+        // And we add it in "Tokens bdd" on notion with token and id retrieve on const newTable
         const response = await notion.pages.create({
             parent: {  database_id: process.env.TOKENS_TABLE_ID },
             properties: {
-                Token: { title: [{ text: {content: generateTI(1)} }] },
+                Token: { title: [{ text: {content: generateToken()} }] },
                 Id: { rich_text: [{ text: { content: newTable.id} }] },
                 Creator: { rich_text: [{ text: { content: creator } }] },
                 Name: { rich_text: [{ text: { content: name } }] },
@@ -58,10 +61,12 @@ export const createNewDB = async (req, res) => {
 }
 
 export const addRow = async (req, res) => {
+    // Same here, soon it will be req.body for token and name
     const token = "secret_vFiZT3C44POr4yZk9A42dE56t5RjTJ3W3OgeowqmyuqYz44O5NRaG5RmGHmEpoE4";
     const name = "New row"
 
     try{
+        // Search the token on the db and if it match we take the id
         const searchResponse = await notion.databases.query({
             database_id: process.env.TOKENS_TABLE_ID,
             filter: {
@@ -74,24 +79,25 @@ export const addRow = async (req, res) => {
             }
         })
         
+        // If no token are frint
         if (searchResponse.results.length === 0) {
-            return res.status(404).json({ error: "Le token n'a pas été trouvé." });
+            console.error("Le token n'a pas été trouvé.");
         }
+        // take the id of the user db
         var pageId = searchResponse.results[0].properties.Id.rich_text[0].text.content
 
-
+        // retrieve properties of the db
         const database = await notion.databases.retrieve({
             database_id: pageId
         })
+        // add a properties soon replace rich_text by an option like title number date etc
         database.properties[name] = { rich_text: {} }
 
+        // And we update the db
         await notion.databases.update({
             database_id: pageId,
             properties: database.properties
         })
-
-
-        console.log(database)
     }
     catch(err){
         console.error(err)
