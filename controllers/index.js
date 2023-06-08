@@ -79,7 +79,7 @@ export const addRow = async (req, res) => {
             }
         })
         
-        // If no token are frint
+        // If no token are find
         if (searchResponse.results.length === 0) {
             console.error("Le token n'a pas été trouvé.");
         }
