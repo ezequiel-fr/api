@@ -5,12 +5,13 @@ config();
 const notion = new Client({
     auth: process.env.NOTION_TOKEN_KEY
 })
+
 export const createNewDB = async (req, res) => {
     const { name, creator, minrole, description, status } = {
-        name: "Test BDD",
+        name: "First test",
         creator: "Le criquet #Owner",
         minrole: "Owner",
-        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sagittis ullamcorper tellus, id euismod nisi finibus a. Nam malesuada semper libero, vel gravida enim facilisis sit amet. Donec interdum augue eget est bibendum, vitae aliquet elit consequat. Mauris consectetur orci non tincidunt ultrices. Aliquam vitae nisl ipsum. Sed consectetur fringilla aliquam. Vestibulum aliquam tellus eu odio imperdiet rhoncus. Nulla cursus tincidunt elit id pellentesque. Sed non imperdiet metus, vel efficitur arcu. Duis at tortor id neque viverra placerat id eget libero. Cras pretium luctus nibh nec facilisis. Nulla facilisi. Nam maximus est ac nunc convallis, vitae cursus erat posuere.",
+        description: "Une base de données pour les test de developpement et uniquement pour ca (serat supprimer quand la fonction supprimer serat disponible)",
         status: "on"
     };
 
@@ -32,6 +33,7 @@ export const createNewDB = async (req, res) => {
             title: [ { type: 'text', text: { content: name } } ],
             properties: {
                 Name: { title: {} },
+                Numero: { number: {} },
                 "Other properties": { rich_text: {} }
             }
         })
@@ -52,5 +54,46 @@ export const createNewDB = async (req, res) => {
         res.status(201).json({ results: response })
     }catch(err){
         console.log(err)
+    }
+}
+
+export const addRow = async (req, res) => {
+    const token = "secret_vFiZT3C44POr4yZk9A42dE56t5RjTJ3W3OgeowqmyuqYz44O5NRaG5RmGHmEpoE4";
+    const name = "New row"
+
+    try{
+        const searchResponse = await notion.databases.query({
+            database_id: process.env.TOKENS_TABLE_ID,
+            filter: {
+                or: [
+                    {
+                        property: "Token",
+                        title: { equals: token }
+                    }
+                ]
+            }
+        })
+        
+        if (searchResponse.results.length === 0) {
+            return res.status(404).json({ error: "Le token n'a pas été trouvé." });
+        }
+        var pageId = searchResponse.results[0].properties.Id.rich_text[0].text.content
+
+
+        const database = await notion.databases.retrieve({
+            database_id: pageId
+        })
+        database.properties[name] = { rich_text: {} }
+
+        await notion.databases.update({
+            database_id: pageId,
+            properties: database.properties
+        })
+
+
+        console.log(database)
+    }
+    catch(err){
+        console.error(err)
     }
 }
