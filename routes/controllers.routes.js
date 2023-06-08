@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createNewDB, addRow } from "../controllers/index.js";
+import { createNewDB, addRow, editRow } from "../controllers/index.js";
 
 const userDB = Router();
 
@@ -8,5 +8,7 @@ userDB.get('/exemple', (req, res) => res.status(200).json([{"Token":"1a2b3c4d5e6
 userDB.post('/newDB', createNewDB)
 //add a row in an existant db, token and name required
 userDB.post('/addRow', addRow)
+// Edit row name
+userDB.post('/editRow', editRow)
 
 export default userDB;
