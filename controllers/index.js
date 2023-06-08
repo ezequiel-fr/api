@@ -56,7 +56,7 @@ export const createNewDB = async (req, res) => {
 
         res.status(201).json({ results: response })
     }catch(err){
-        console.log(err)
+        console.error(err)
     }
 }
 
@@ -94,6 +94,54 @@ export const addRow = async (req, res) => {
         database.properties[name] = { rich_text: {} }
 
         // And we update the db
+        await notion.databases.update({
+            database_id: pageId,
+            properties: database.properties
+        })
+    }
+    catch(err){
+        console.error(err)
+    }
+}
+
+export const editRow = async () => {
+    const { token, currentColumnName, newColumnName } = {
+        token: "secret_vFiZT3C44POr4yZk9A42dE56t5RjTJ3W3OgeowqmyuqYz44O5NRaG5RmGHmEpoE4",
+        currentColumnName: "New row",
+        newColumnName: "New name of column"
+    }
+
+    try {
+        const searchResponse = await notion.databases.query({
+            database_id: process.env.TOKENS_TABLE_ID,
+            filter: { or: [{ property: "Token", title: { equals: token } }] }
+        })
+
+        if(searchResponse.results.length === 0){
+            console.error("Le token n'a pas été trouvé.")
+            return;
+        }
+
+        const pageId = searchResponse.results[0].properties.Id.rich_text[0].text.content;
+    
+        const database = await notion.databases.retrieve({
+            database_id: pageId
+        })
+
+        const propertyToUpdate = Object.entries(database.properties).find(([ key, value ]) => {
+            if (value.name == "New row"){
+                return true;
+            }
+            return false
+        })
+
+        if(!propertyToUpdate){
+            console.error("La colonne n'a pas été trouvée.")
+        }
+
+        const [ propertyKey, propertyvalue ] = propertyToUpdate
+        propertyvalue.name = newColumnName
+
         await notion.databases.update({
             database_id: pageId,
             properties: database.properties
