@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "keywords": [
     "DB"
@@ -19,7 +20,9 @@
     "dotenv": "^16.1.4",
     "express": "^4.18.2",
     "fs": "^0.0.1-security",
-    "nodemon": "^2.0.22",
     "notion-utils": "^6.16.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
   }
 }
